@@ -1,39 +1,21 @@
-const btnValider = document.querySelector("#form");
-const contentTemplate = document.querySelector("#forecast-container");
-
-btnValider.addEventListener("submit", function(e) {
+$("#form").on("submit", function(e) {
   e.preventDefault();
-  const city = document.querySelector("#city").value;
-  getDataWeather(city);
+  getDataWeather($("#city")[0].value);
 });
 
-$("#cancelModal").click(function(){
-    $(".ui.basic.modal").modal("hide");
-})
+$("#cancelModal").click(function() {
+  $(".ui.basic.modal").modal("hide");
+});
 
 function viewForecast(data) {
   let content = createComponerforecastMain(data[Object.keys(data)[0]][0]);
   for (const attribut in data) {
     if (data.hasOwnProperty(attribut)) {
-      content += createComponerforecast(data[attribut][0]);
+      if (data[Object.keys(data)[0]][0] !== data[attribut][0])
+        content += createComponerforecast(data[attribut][0]);
     }
   }
-  contentTemplate.innerHTML = content;
-}
-
-function formatDate(date) {
-  date = new Date(date);
-  let options = {
-    weekday: "short",
-    // year: "numeric",
-    month: "long",
-    day: "numeric"
-  };
-  return new Intl.DateTimeFormat("fr-FR", options).format(date);
-}
-function formatHour(date) {
-  date = new Date(date);
-  return `${date.getHours()}h : ${date.getMinutes()}'`;
+  $("#forecast-container")[0].innerHTML = content;
 }
 
 function getDataWeather(city) {
@@ -53,15 +35,16 @@ function getDataWeather(city) {
     },
     success: function(data) {
       viewForecast(formatDataWeather(data.list, data.city.name));
+      $("#city")[0].value = "";
     },
     error: function(e) {
       if (e.status === 404) {
         $("#messageModal").html(`${city}  n'est pas une ville correcte !!`);
         $(".ui.basic.modal").modal("show");
+        $("#city")[0].value = "";
       } else {
         $("#messageModal").html("Connexion Impossible !!!");
         $(".ui.basic.modal").modal("show");
-
       }
     }
   });
@@ -84,6 +67,20 @@ function formatDataWeather(dataWeather, city) {
     });
   }
   return groupDataWeatherByDay(data);
+}
+function formatDate(date) {
+  date = new Date(date);
+  let options = {
+    weekday: "short",
+    // year: "numeric",
+    month: "long",
+    day: "numeric"
+  };
+  return new Intl.DateTimeFormat("fr-FR", options).format(date);
+}
+function formatHour(date) {
+  date = new Date(date);
+  return `${date.getHours()}h : ${date.getMinutes()}'`;
 }
 
 function groupDataWeatherByDay(dataWeahterFormated) {
